@@ -24,7 +24,9 @@ int collect_stats(proc_stats_t *stats_array, int max_limit) {
         if (isdigit(dp->d_name[0])) {
             if (sscanf(dp->d_name, "%d", &pid) == 1) {
                 if (parse_proc_stat(pid, &stats_array[count]) == 0) {
-                    count++;
+			stats_array[count].is_stale = 0; // RESET
+			stats_array[count].cpu_usage = 0.0; // RESET
+                    	count++;
                 }
             }
         }

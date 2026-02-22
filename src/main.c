@@ -11,7 +11,7 @@ int main(){
 	int n_prev = collect_stats(prev, MAX_PROC);
 	usleep(time);
 	int n_curr = collect_stats(curr, MAX_PROC);
-	printf("\033[H\033[J");
+	//printf("\033[H\033[J");
 	printf("%-8s %-20s %-8s %-10s\n", "PID", "NAME", "STATE", "CPU %");
         printf("----------------------------------------------------------\n");
 	for (int i = 0; i < n_curr; i++) {
@@ -23,9 +23,11 @@ int main(){
                                
                 		double usage = (double)total_ticks * 200.0 / sysconf(_SC_CLK_TCK);
 				curr[i].cpu_usage = usage;
+				curr[i].is_stale = check_stale_libs(curr[i].pid);
                 
-                	if (curr[i].state == 'Z' || curr[i].state == 'D' || curr[i].cpu_usage > 50.0){
-				printf("%-8d %-20s [%c] %10.2f%%\n",curr[i].pid, curr[i].comm, curr[i].state, curr[i].cpu_usage);				                }
+                	if (curr[i].state == 'Z' || curr[i].state == 'D' || curr[i].cpu_usage > 50.0 || curr[i].is_stale){
+				char *tag = curr[i].is_stale ? "[STALE]" : "";
+				printf("%-8d %-20s [%c] %10.2f%% %s\n",curr[i].pid, curr[i].comm, curr[i].state, curr[i].cpu_usage, tag);				                }
             }
         }
     }

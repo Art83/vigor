@@ -2,6 +2,32 @@
 #include<string.h>
 #include "vigor.h"
 
+int check_stale_libs(int pid) {
+    char path[40], line[1024];
+    sprintf(path, "/proc/%d/maps", pid);
+    
+    FILE *f = fopen(path, "r");
+    if (!f) return 0; // If we can't open it, assume it's fine
+
+    int stale = 0;
+    while (fgets(line, sizeof(line), f)) {
+        if (strstr(line, "(deleted)") && strchr(line, '/')) {
+    		// 1. Ignore the common "noise" paths
+    		if (strstr(line, "/run/user/") || strstr(line, "/dev/shm")) {
+        		continue;
+		}
+
+    		// 2. Only care if it's a library, a binary, or in /tmp (our test area)
+    		if (strstr(line, ".so") || strstr(line, "/bin/") || strstr(line, "/tmp/")) {
+        		stale = 1;
+        		break;
+		}
+	}
+
+} 
+    fclose(f);
+    return stale;
+}
 
 int parse_proc_stat(int pid, proc_stats_t *stats) {
     char path[40], buffer[1024];
